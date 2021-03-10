@@ -5,6 +5,7 @@ nav:
         - Shellshock背景: shellshock/background.md
         - 攻击Set-UID获取root权限: shellshock/attack-setuid.md
         - 攻击CGI程序: shellshock/attack-cgi.md
+        - 攻击PHP程序: shellshock/attack-php.md
     - About: about.md
 
 theme:
