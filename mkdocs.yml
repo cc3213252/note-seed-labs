@@ -1,6 +1,8 @@
 site_name: Seed Labs
 nav:
     - Home: index.md
+    - Set-UID攻击:
+        - Set-UID背景: setuid/background.md
     - Shellshock攻击:
         - Shellshock背景: shellshock/background.md
         - 攻击Set-UID: shellshock/attack-setuid.md
