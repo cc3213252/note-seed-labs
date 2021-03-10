@@ -1,6 +1,6 @@
 # Shellshock攻击
 
-## 背景
+## Shellshock背景
 
 2014年9月24日，Bash程序被发现存在一个严重的安全漏洞。攻击者可以利用该漏洞在被影响的服务器上执行任意代码。这个严重的安全漏洞被称为
 Shellshock漏洞。
@@ -28,7 +28,8 @@ env x='() { :;}; echo vulnerable' bash -c "echo this is a test "
 ```bash
 sudo apt-get update
 sudo apt install gcc make -y  
-wget http://ftp.gnu.org/gnu/bash/bash-4.1.tar.gz tar xf bash-4.1.tar.gz
+wget http://ftp.gnu.org/gnu/bash/bash-4.1.tar.gz  
+tar xf bash-4.1.tar.gz
 cd bash-4.1
 ./configure
 make

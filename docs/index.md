@@ -2,6 +2,10 @@
 
  [项目源代码](https://github.com/cc3213252/note-seed-labs)
 
+## Set-UID攻击
+
+* [Set-UID背景](./setuid/background.md)
+
 ## Shellshock攻击
 
 * [Shellshock背景](./shellshock/background.md)
