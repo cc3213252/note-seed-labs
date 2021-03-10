@@ -1,7 +1,10 @@
 site_name: Seed Labs
 nav:
     - Home: index.md
-    - Shellshock攻击: shellshock.md
+    - Shellshock攻击:
+        - Shellshock背景: shellshock/background.md
+        - 攻击Set-UID获取root权限: shellshock/attack-setuid.md
+        - 攻击CGI程序: shellshock/attack-cgi.md
     - About: about.md
 
 theme:
