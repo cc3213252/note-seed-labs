@@ -5,6 +5,7 @@
 ## Set-UID攻击
 
 * [Set-UID背景](./setuid/background.md)
+* [Set-UID的主要攻击面](./setuid/attack-setuid.md)
 
 ## Shellshock攻击
 
