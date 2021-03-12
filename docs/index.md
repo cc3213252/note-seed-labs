@@ -13,6 +13,7 @@
 ## 环境变量攻击
 
 * [环境变量背景](./env/background.md)
+* [攻击动态链接库](./env/attack-lib.md)
 
 ## Shellshock攻击
 

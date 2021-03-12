@@ -8,7 +8,8 @@ nav:
         - 用execve代替system: setuid/use-execve.md
         - 攻击php调外部命令: setuid/attack-php.md
     - 环境变量攻击:
-          - 环境变量背景: env/background.md
+        - 环境变量背景: env/background.md
+        - 攻击动态链接库: env/attack-lib.md
     - Shellshock攻击:
         - Shellshock背景: shellshock/background.md
         - 攻击Set-UID: shellshock/attack-setuid.md
