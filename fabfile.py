@@ -1,9 +1,10 @@
 # coding=utf8
 
 from fabric.api import *
-from fabric.contrib.project import rsync_project, upload_project
+from fabric.contrib.project import rsync_project
 
 dev_host = 'www@www.blueegg.net.cn'
+
 
 def upload(remote_dir):
     local_dir = './site/'

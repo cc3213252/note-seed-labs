@@ -35,5 +35,5 @@ cd bash-4.1
 make
 sudo make install
 sudo rm /bin/bash
-ln -s /usr/local/bin/bash /bin/bash
+ln -s /usr/local/bin/bash /bin
 ```
