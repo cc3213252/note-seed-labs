@@ -14,6 +14,8 @@
 
 * [环境变量背景](./env/background.md)
 * [攻击动态链接库](./env/attack-lib.md)
+* [攻击外部程序](env/attack-outprogram.md)
+* [攻击程序本身](env/attack-program.md)
 
 ## Shellshock攻击
 
