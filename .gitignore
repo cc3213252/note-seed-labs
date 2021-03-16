@@ -1,3 +1,4 @@
 site/
 .idea/
 __pycache__/
+.vagrant/

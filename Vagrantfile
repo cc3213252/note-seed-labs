@@ -10,7 +10,7 @@ hosts = [{
 
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "bento/ubuntu-20.04"
+  config.vm.box = "ubuntu14.04-i386"
   config.ssh.insert_key = true
   config.hostmanager.enabled = true
   config.hostmanager.manage_host = true

@@ -10,3 +10,11 @@ http://note.blueegg.net.cn/seed-labs
 mkdocs build
 fab dev_upload
 ```
+
+## 安装32位ubuntu系统
+
+```bash
+wget https://cloud-images.ubuntu.com/vagrant/trusty/20191107/trusty-server-cloudimg-i386-vagrant-disk1.box
+vagrant box add ubuntu14.04-i386 trusty-server-cloudimg-i386-vagrant-disk1.box
+```
+
