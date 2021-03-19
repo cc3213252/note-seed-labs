@@ -29,3 +29,5 @@
 * [程序运行原理](./overflow/program.md)
 * [准备攻击环境](./overflow/env-perpare.md)
 * [构造shellcode](./overflow/shellcode.md)
+* [防御措施](./overflow/defense.md)
+* [攻破bash保护](./overflow/attack-bashguard.md)
