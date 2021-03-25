@@ -31,6 +31,8 @@ nav:
         - 攻击格式化字符串漏洞: formatvul/attack.md
         - 注入恶意代码: formatvul/malware.md
         - 防御措施: formatvul/defense.md
+    - 竟态条件漏洞:
+        - 竟态条件漏洞攻击: racecondition/attack.md
 
 theme:
     name: readthedocs
