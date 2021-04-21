@@ -37,6 +37,10 @@ nav:
     - 脏牛竟态条件攻击:
         - 脏牛攻击背景: dirtycow/background.md
         - 脏牛漏洞攻击: dirtycow/attack.md
+    - 跨站请求伪造:
+        - CSRF背景: csrf/background.md
+        - CSRF攻击GET: csrf/attack-get.md
+        - CSRF攻击POST: csrf/attack-post.md
 
 theme:
     name: readthedocs
