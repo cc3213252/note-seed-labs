@@ -60,3 +60,9 @@
 * [CSRF攻击GET](csrf/attack-get.md)
 * [CSRF攻击POST](csrf/attack-post.md)
 * [防御措施](csrf/defense.md)
+
+## 跨站脚本攻击
+
+* [XSS背景](xss/background.md)
+* [XSS攻击](xss/attack.md)
+* [实现自我传播](xss/self-spread.md)
