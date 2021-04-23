@@ -45,7 +45,7 @@ var elgg = {"config":{"lastcache":1549469404,"viewtype":"default","simplecache_e
 CSRF需要构造一个恶意网页，而XSS则是从一个Elgg页面发送请求。如果只是发送一个普通的http请求，将
 导致浏览器离开当前页面从而引起用户警觉。可以使用Ajax在后台发送http请求。
 
-```javascript
+```html
 <script type="text/javascript">
 window.onload = function() {
   var Ajax = null;
@@ -93,7 +93,7 @@ window.onload = function() {
 
 ### 构造Ajax请求改个人信息
 
-```javascript
+```html
 <script type="text/javascript">
 window.onload = function() {
   var Ajax = null;

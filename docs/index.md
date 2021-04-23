@@ -66,3 +66,4 @@
 * [XSS背景](xss/background.md)
 * [XSS攻击](xss/attack.md)
 * [实现自我传播](xss/self-spread.md)
+* [防御措施](xss/defense.md)
