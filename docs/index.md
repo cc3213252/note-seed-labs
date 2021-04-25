@@ -67,3 +67,14 @@
 * [XSS攻击](xss/attack.md)
 * [实现自我传播](xss/self-spread.md)
 * [防御措施](xss/defense.md)
+
+## SQL注入攻击
+
+* [SQL注入背景](sqlinjection/background.md)
+* [SQL注入攻击](sqlinjection/attack.md)
+* [防御措施](sqlinjection/defense.md)
+
+## 数据包嗅探和伪造
+
+* [数据包嗅探和伪造背景](packetsniff/background.md)
+* [数据包嗅探](packetsniff/packet-sniffing.md)
