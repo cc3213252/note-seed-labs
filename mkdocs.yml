@@ -51,6 +51,11 @@ nav:
         - SQL注入背景: sqlinjection/background.md
         - SQL注入攻击: sqlinjection/attack.md
         - 防御措施: sqlinjection/defense.md
+    - 数据包嗅探和伪造:
+        - 数据包嗅探和伪造背景: packetsniff/background.md
+        - 数据包嗅探: packetsniff/packet-sniffing.md
+        - 数据包伪造: packetsniff/packet-spoofing.md
+        - 嗅探与伪造: packetsniff/sniff-spoof.md
 
 theme:
     name: readthedocs

@@ -78,3 +78,6 @@
 
 * [数据包嗅探和伪造背景](packetsniff/background.md)
 * [数据包嗅探](packetsniff/packet-sniffing.md)
+* [嗅探和伪造工具](packetsniff/tools.md)
+* [数据包伪造](packetsniff/packet-spoofing.md)
+* [嗅探与伪造](packetsniff/sniff-spoof.md)

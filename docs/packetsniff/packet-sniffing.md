@@ -14,7 +14,7 @@
 void main()
 {
     struct sockaddr_in server;
-    struce sockaddr_in client;
+    struct sockaddr_in client;
     int clientlen;
     char buf[1500];
     
@@ -29,12 +29,20 @@ void main()
     
     while(1){
         bzero(buf, 1500);
-        recvfrom(sock, buf, 1500-1, 0, (struce sockaddr *)&client, &clientlen);
+        recvfrom(sock, buf, 1500-1, 0, (struct sockaddr *)&client, &clientlen);
         printf("%s\n", buf);
     }
     close(sock);
 }
 ```
+首先起UDP服务：
+![起udp服务](../img/packet-udp.png)
+
+接着宿主机往虚拟机9090端口发数据：
+![发udp数据](../img/packet-sendudp.png)
+
+服务端收到数据：
+![收udp数据](../img/packet-recvudp.png)
 
 ## 原始套接字数据包嗅探
 
@@ -65,12 +73,18 @@ int main()
     {
         int data_size = recvfrom(sock, buffer, PACKET_LEN, 0, &saddr, (socklen_t*)sizeof(saddr));
         if(data_size)printf("Got one packet\n");
+        sleep(1);
     }
     close(sock);
     return 0;
 }
 ```
+![调试raw](../img/packet-sniffraw.png)
 
+!!! warning
+
+    书上不加sleep会导致刷屏
+ 
 !!! 原始套接字和普通套接字的区别
 
     普通套接字当内核接收到数据包时，它会通过网络协议栈传递数据包，并最终将数据包的载荷（payload）通过socket传递
@@ -88,6 +102,33 @@ pcap（packet capture，数据包捕捉）API提供了一种跨平台、高效�
 使程序员可以用可读性较强的布尔表达式来指定过滤规则。编译器将表达式翻译成为内核可以利用的BPF伪代码。  
 libpcap和Winpcap分别是unix和windows中的pcap API。在Linux中，pcap是用raw socket实现的。
 
+## 查找网络设备
+
+```c
+#include <stdio.h>
+#include <pcap.h>
+
+int main(int argc, char *argv[])
+{
+    char *dev, errbuf[PCAP_ERRBUF_SIZE];
+
+    dev = pcap_lookupdev(errbuf);
+    if (dev == NULL) {
+        fprintf(stderr, "Couldn't find default device: %s\n", errbuf);
+        return(2);
+    }
+    printf("Device: %s\n", dev);
+    return(0);
+}
+```
+![找网络设备](../img/packet-finddevice.png)
+pcap实验要做成功，这个程序一定要能成功获取到网络设备
+
+!!! warning
+
+    用vagrant生成的虚拟机用这个程序无法获取网络设备，可能跟多网卡有关。这整个章节要换seed lab提供的虚拟机
+    镜像来做实验。
+   
 ## pcap API实现数据包嗅探
 
 ```c
@@ -104,12 +145,22 @@ int main()
     pcap_t *handle;
     char errbuf[PCAP_ERRBUF_SIZE];
     struct bpf_program fp;
-    char filter_exp[] = "ip proto icmp";
+    char filter_exp[] = "port 23";
     bpf_u_int32 net;
     
-    handle = pcap_open_live("enp0s3", BUFSIZ, 1, 100, errbuf); 
-    pcap_compile(handle, &fp, filter_exp, 0, net);  //编译过滤表达式
-    pcap_setfilter(handle, &fp);  // 把编译好的BPF过滤器交给内核
+    handle = pcap_open_live("ens33", BUFSIZ, 1, 1000, errbuf); 
+    if (handle == NULL) {
+        fprintf(stderr, "Couldn't open device ens33: %s\n", errbuf);
+        return(2);
+    }
+    if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1) {
+        fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        return(2);
+    }
+    if (pcap_setfilter(handle, &fp) == -1) {
+        fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        return(2);
+    }
     pcap_loop(handle, -1, got_packet, NULL); 
     pcap_close(handle);
     return 0;
@@ -117,9 +168,9 @@ int main()
 ```
 
 ```c
-pcap_open_live("enp0s3", BUFSIZ, 1, 100, errbuf);
+pcap_open_live("ens33", BUFSIZ, 1, 100, errbuf);
 ```
-这行是开启有效pcap会话，enp0s3是网络设备名，实际ifconfig替换成自己的，1表示开启混杂模式
+这行是开启有效pcap会话，eth1是网络设备名，实际ifconfig替换成自己的，1表示开启混杂模式
 ```c
 pcap_compile(handle, &fp, filter_exp, 0, net);  //编译过滤表达式
 pcap_setfilter(handle, &fp);  // 把编译好的BPF过滤器交给内核
@@ -134,6 +185,22 @@ pcap_loop(handle, -1, got_packet, NULL);
 ```bash
 gcc -o sniff sniff.c -lpcap
 ```
+启动程序等待抓包：
+![等抓包](../img/packet-sniff.png)
+
+宿主机发包：
+![发包](../img/packet-send.png)
+
+虚拟机显示收到包：
+![收到包](../img/packet-result.png)
+
+!!! warning
+
+    书上这个程序有两个问题，一是filter_exp设置成ip proto icmp不好测试，二是没有判断是否成功，会导致
+    程序经常崩溃而不知道问题所在。  
+
+pcap抓包可以参考[pcap抓包](http://www.tcpdump.org/pcap.htm)  
+这个实验一定要做成功，否则后面没法继续。
 
 ## 处理捕获的数据包
 
@@ -158,9 +225,17 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     数据包实际上是一个以太网帧
 
 ```c
+// sniff_improved.c
 #include <pcap.h>
 #include <stdio.h>
 #include <arpa/inet.h>
+
+struct ethheader
+{
+    u_char ether_dhost[6];
+    u_char ether_shost[6];
+    u_short ether_type;
+};
 
 struct ipheader {
     unsigned char iph_ihl:4,  // ip头长度
@@ -198,5 +273,42 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
             default:
                 printf("    Protocol: others\n");
                 return;
+         }
+    }     
+}
+
+int main()
+{
+    pcap_t *handle;
+    char errbuf[PCAP_ERRBUF_SIZE];
+    struct bpf_program fp;
+    char filter_exp[] = "port 23";
+    bpf_u_int32 net;
+    
+    handle = pcap_open_live("ens33", BUFSIZ, 1, 1000, errbuf); 
+    if (handle == NULL) {
+        fprintf(stderr, "Couldn't open device ens33: %s\n", errbuf);
+        return(2);
+    }
+    if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1) {
+        fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        return(2);
+    }
+    if (pcap_setfilter(handle, &fp) == -1) {
+        fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        return(2);
+    }
+    pcap_loop(handle, -1, got_packet, NULL); 
+    pcap_close(handle);
+    return 0;
 }
 ```
+
+虚拟机起服务：
+![起服务](../img/packet-sniffplus.png)
+
+宿主机发包：
+![发包](../img/packet-send.png)
+
+虚拟机收到包：
+![收包](../img/packet-recv.png)
