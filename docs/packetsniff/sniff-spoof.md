@@ -1,12 +1,15 @@
 # 嗅探与伪造
 
-在许多攻击中，需要先进行数据包嗅探，然后根据捕获的数据包内容来伪造响应数据包，这就是嗅探与伪造
+在许多攻击中，需要先进行数据包嗅探，然后根据捕获的数据包内容来伪造响应数据包，这就是嗅探与伪造  
+本节这个实验是前面的实验综合，书上程序只有片段，怎么补充完整，考验理解和编程能力。  
 
 ```c
+// sniff_spoof.c
 #include <pcap.h>
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <string.h>
 
 struct ipheader {
     unsigned char iph_ihl:4,  // ip头长度
@@ -45,11 +48,15 @@ void send_raw_ip_packet(struct ipheader* ip)
     
     int sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
     setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &enable, sizeof(enable));
+    printf("setsockopt ok\n");
     
     dest_info.sin_family = AF_INET;
     dest_info.sin_addr = ip->iph_destip;
     
-    sendto(sock, ip, ntohs(ip->iph_len), 0, (struct sockaddr *)&dest_info, sizeof(dest_info));
+    printf("dest ip: %s\n", inet_ntoa(ip->iph_destip));
+    if (sendto(sock, ip, ntohs(ip->iph_len), 0, (struct sockaddr *)&dest_info, sizeof(dest_info)) < 0){
+        printf("sendto func error\n");
+    }
     close(sock);
 };
 
@@ -60,6 +67,7 @@ void spoof_reply(struct ipheader* ip)
   struct udpheader* udp = (struct udpheader *)((u_char *)ip + ip_header_len);
   
   if (ntohs(udp->udp_dport) != 9999){
+    printf("spoof_reply return\n");
     return;
   }
   // 复制捕获的数据包
@@ -86,10 +94,10 @@ void spoof_reply(struct ipheader* ip)
   newip->iph_ttl = 50;
   newip->iph_len = htons(sizeof(struct ipheader) + sizeof(struct udpheader) + data_len);
   
+  printf("start send raw ip packet\n");
   // 发送伪造的包
   send_raw_ip_packet(newip);
 }
-
 
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
@@ -106,6 +114,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 return;
             case IPPROTO_UDP:
                 printf("    Protocol: UDP\n");
+                spoof_reply(ip);
                 return;
             case IPPROTO_ICMP:
                 printf("    Protocol: ICMP\n");
@@ -114,7 +123,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 printf("    Protocol: others\n");
                 return;
         }
-        spoof_reply(ip);
     }
 }
 
@@ -123,12 +131,23 @@ int main()
     pcap_t *handle;
     char errbuf[PCAP_ERRBUF_SIZE];
     struct bpf_program fp;
-    char filter_exp[] = "ip proto icmp";
+    char filter_exp[] = "port 9999";
     bpf_u_int32 net;
     
-    handle = pcap_open_live("eth1", BUFSIZ, 1, 100, errbuf); 
-    pcap_compile(handle, &fp, filter_exp, 0, net);  //编译过滤表达式
-    pcap_setfilter(handle, &fp);  // 把编译好的BPF过滤器交给内核
+    handle = pcap_open_live("ens33", BUFSIZ, 1, 1000, errbuf); 
+    if (handle == NULL) {
+        fprintf(stderr, "Couldn't open device ens33: %s\n", errbuf);
+        return(2);
+    }
+    if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1) {
+        fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        return(2);
+    }
+    if (pcap_setfilter(handle, &fp) == -1) {
+        fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        return(2);
+    }
+    
     pcap_loop(handle, -1, got_packet, NULL); 
     pcap_close(handle);
     return 0;
@@ -137,6 +156,43 @@ int main()
 程序解读，这个程序捕获了所有的UDP数据包，在捕获的数据包中，如果数据包的目标端口是9999的话，就发送一条伪造的
 回复数据包。
 
-!!! 找不到pcap.h
 
+!!! Note
+
+    找不到pcap.h  
     sudo apt-get install libpcap-dev
+
+
+测试：
+1、在虚拟机1中启动本程序：
+![启动伪造程序](../img/packet-last1.png)
+
+2、虚拟机2中开启接收ip数据包程序：
+```python
+#!/usr/bin/python3
+from scapy.all import *
+
+def print_pkt(pkt):
+    pkt.show()
+
+pkt = sniff(filter='ip', prn=print_pkt)
+```
+启动：
+```bash
+sudo ./sniffer.py
+```
+
+3、在虚拟机2中向虚拟机1的9999端口发数据包：
+![主动发包](../img/packet-last2.png)
+
+4、虚拟机1中接收数据包并返回：
+![接收并返回](../img/packet-last3.png)
+
+5、虚拟机2中接收到伪造的ip数据包：
+![收到ip包](../img/packet-last4.png)
+![收到ip包](../img/packet-last5.png)
+
+!!! Note
+
+    调试时加一些打印非常关键，比如上面：  
+    printf("dest ip: %s\n", inet_ntoa(ip->iph_destip));

@@ -165,8 +165,8 @@ int main()
     ip->iph_ver = 4;
     ip->iph_ihl = 5;
     ip->iph_ttl = 20;
-    ip->iph_sourceip.s_addr = inet_addr("192.168.230.150");
-    ip->iph_destip.s_addr = inet_addr("192.168.230.1");
+    ip->iph_sourceip.s_addr = inet_addr("1.1.1.1");
+    ip->iph_destip.s_addr = inet_addr("192.168.230.151");
     ip->iph_protocol = IPPROTO_ICMP;
     ip->iph_len = htons(sizeof(struct ipheader) + sizeof(struct icmpheader));
     
@@ -181,13 +181,25 @@ int main()
 !!! warning
 
     可能会碰到两个问题，一是程序中ipheader没有定义导致报错，二是in_cksum函数找不到，这是一个自定义函数。
-    说白了，这个程序不完整。如何测试也未知
+
+测试：  
+1、在虚拟机2中（ip为192.168.230.151）修改sniff_improved.c，把里面filter_exp改成icmp，只接收icmp数据包  
+2、在虚拟机1中执行以上程序： 
+```bash
+sudo ./spoof_icmp 
+```
+![发送伪造icmp](../img/packet-icmp-program.png)
+
+3、虚拟机2中收到伪造的数据包
+![收到伪造的数据包](../img/packet-recv-icmp.png)
+可以看到源ip地址是一个伪造的地址  
 
 ## 构造UDP数据包
 
 构造UDP数据包和ICMP包不同的是，这里需要增加有效载荷数据。  
 
 ```c
+// spoof_udp.c
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -253,8 +265,8 @@ int main()
     ip->iph_ver = 4;
     ip->iph_ihl = 5;
     ip->iph_ttl = 20;
-    ip->iph_sourceip.s_addr = inet_addr("192.168.0.11");
-    ip->iph_destip.s_addr = inet_addr("192.168.31.171");
+    ip->iph_sourceip.s_addr = inet_addr("2.2.2.2");
+    ip->iph_destip.s_addr = inet_addr("192.168.230.151");
     ip->iph_protocol = IPPROTO_UDP;
     ip->iph_len = htons(sizeof(struct ipheader) + sizeof(struct udpheader) + data_len);
     
@@ -264,4 +276,24 @@ int main()
     
 ```
 
-无法发送到宿主机，实验失败
+测试1：  
+1、虚拟机2监听9090端口：  
+![监听udp](../img/packet-spoof-udp1.png)
+
+2、虚拟机1中发送伪造的UDP包：
+![发送udp](../img/packet-spoof-udp2.png)
+
+3、虚拟机2中收到发来的包：
+![接收udp](../img/packet-spoof-udp3.png)
+
+测试2：  
+1、虚拟机2修改sniff_improved.c，把里面filter_exp改成port 9090，监听9090端口  
+2、虚拟机1中发送伪造的UDP包：
+![发送udp](../img/packet-spoof-udp2.png)
+
+3、虚拟机2中收到发来的包：
+![接收udp](../img/packet-spoof-udp4.png)
+
+!!! warning
+
+    注意接收还是发送数据包一律需要sudo权限，否则实验不成功

@@ -53,3 +53,103 @@ setsockopt(sock, SOL_SOCKET, SO_ATTACH_FILTER, &bpf, sizeof(bpf));
 ```
 与bpf一旦与socket绑定，当数据包到达内核时，回调函数就会被调用，用于判断该数据包是否应该过滤。通过过滤的数据
 包被压入协议栈。
+
+## 字节顺序
+
+字节顺序和处理器架构有关，和几位操作系统无关  
+x86系列计算机都是小端序  
+
+小端字节顺序的计算机先写最低字节，大端是先写最高字节。
+
+!!! 名字来由
+
+    来自《格列佛游记》，吃鸡蛋先敲大头还是小头。大端字节意味着先从大的字节开始保存。
+    
+**网络字节序**： 为了解决字节顺序不匹配的问题，IANA(Internet Assigned Numbers Authority，互联网
+数字分配机构)定义了一种名为网络字节顺序的字节顺序，这就要求计算机在将多个字节数据写入数据包时使用这种字节
+顺序，而不是操作系统的字节顺序。这种字节顺序和大端字节顺序是相同的。
+
+**字节序宏函数**：为了方便网络字节序和本机字节序之间转换，提供了如下宏函数，从而使得代码有可移植性。
+| 宏函数 | 描述 |
+| ---- | ---- |
+| htons() | 把无符号短整数从本机字节序转网络字节序 |
+| htonl()         |  把无符号整数从本机字节序转网络字节序   |
+| ntohs()        | 把无符号短整数从网络字节序转本机字节序    |
+| ntohl()       | 把无符号整数从网络字节序转本机字节序    |  
+
+## 校验和
+
+每一个数据包中都有校验和字段。
+
+!!! 文档出处
+
+    RFC 1071给出了IP、ICMP、TCP和UDP数据包头中校验和的算法。  
+
+!!! IP数据包不需提供校验和
+
+    IP数据包不需提供校验和，系统会计算IP数据包头中的校验和字段，其他数据包头需要开发者计算。
+
+```c
+// checksum.c
+unsigned short in_cksum(unsigned short *buf, int length)
+{
+    unsigned short *w = buf;
+    int nleft = length;
+    int sum = 0;
+    unsigned short temp = 0;
+    
+    while (nleft > 1)
+    {
+        sum += *w++;
+        nleft -= 2;
+    }
+    
+    if (nleft == 1)
+    {
+        *(u_char *)(&temp) = *(u_char *)w;
+        sum += temp;
+    }
+    
+    // 对每个16比特进行二进制反码求和
+    sum = (sum >> 16) + (sum & 0xffff);
+    sum += (sum >> 16);
+    return (unsigned short)(~sum);
+}
+```
+
+根据RFC 768文档和RFC 793文档，TCP和UDP的校验和是伪头部中每16比特的反码和，该伪头部中包含了IP头部、
+TCP/UDP头部以及数据的信息。  
+如果需要的话，该校验和的末尾会填充8位0，使之成为两个字节的整数倍。  
+为了计算校验和，需要先创建一个伪头部，然后使用上述in_chksum()函数计算校验和。
+
+```c
+// 伪TCP头部
+struct pseudo_tcp
+{
+    unsigned saddr, daddr;
+    unsigned char mbz;
+    unsigned char ptcl;
+    unsigned short tcpl;
+    struct tcpheader tcp;
+    char payload[PACKET_LEN];
+};
+
+unsigned short calculate_tcp_checksum(struct ipheader *ip)
+{
+    struct tcpheader *tcp = (struct tcpheader *)((u_char *)ip + sizeof(struct ipheader));
+    int tcp_len = ntohs(ip->iph_len)->sizeof(struct ipheader);
+    
+    // 伪造TCP头部计算校验和
+    struct pesudo_tcp p_tcp;
+    memset(&p_tcp, 0x0, sizeof(struct pseudo_tcp));
+    
+    p_tcp.saddr = ip->iph_sourceip.s_addr;
+    p_tcp.daddr = ip->iph_destip.s_addr;
+    p_tcp.mbz = 0;
+    p_tcp.ptcl = IPPROTO_TCP;
+    p_tcp.tcpl = htons(tcp_len);
+    memcpy(&p_tcp.tcp, tcp, tcp_len);
+    
+    return (unsigned short) in_cksum((unsigned short *)&p_tcp, tcp_len + 12);
+}
+```
