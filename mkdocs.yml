@@ -71,6 +71,10 @@ nav:
     - 对DNS的攻击:
         - DNS基本概念: dns/background.md
         - 配置DNS实验环境: dns/conf-env.md
+        - 本地DNS缓存中毒攻击: dns/attack-local.md
+        - 远程DNS缓存中毒攻击: dns/attack-remote.md
+        - 恶意DNS服务器伪造攻击: dns/evil-reply.md
+        - 预防DNS缓存中毒攻击: dns/defense.md
 
 theme:
     name: readthedocs

