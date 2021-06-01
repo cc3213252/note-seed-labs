@@ -65,6 +65,8 @@ int main()
 我们的目标是在函数返回时跳转到system函数，故返回地址填system函数的地址，那么这时system栈帧应该
 如下图：
 ![system函数的栈帧](../img/returntolibc-system.png)
+正常程序的栈帧如下图：  
+![程序的栈帧](../img/returntolibc-normal.png)
 可以知道的是，system函数第一个参数肯定在%ebp + 8处，system函数返回地址即%ebp +4处放exit函数
 的地址，可以完美终止程序
 ![system函数位置确定](../img/returntolibc-system2.png)

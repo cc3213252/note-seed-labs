@@ -1,5 +1,29 @@
 # 攻击格式化字符串漏洞
 
+漏洞程序：
+```c
+#include <stdio.h>
+
+void fmtstr()
+{
+    char input[100];
+    int var = 0x11223344;
+    
+    printf("Target address: %x\n", (unsigned) &var);
+    printf("Data at target address: 0x%x\n", var);
+    
+    printf("Please enter a string: ");
+    fgets(input, sizeof(input)-1, stdin);
+    printf(input);
+    printf("Data at target address: 0x%x\n", var);
+}
+
+void main()
+{
+    fmtstr();
+}
+```
+
 ## 攻击一：使程序崩溃
 
 ![输入格式化字符崩溃](../img/format-attack1.png)
@@ -11,6 +35,9 @@
 
 ![漏洞程序栈](../img/format-stack.png)
 漏洞程序栈如图，输入%s多了，就会使printf函数的va_list指针移动到printf函数栈帧之上的位置。
+
+正常程序的栈帧如下图：  
+![程序的栈帧](../img/returntolibc-normal.png)
 
 ## 攻击二：输出栈中的数据
 
@@ -37,7 +64,7 @@ echo $(printf "\x94\xf6\xff\xbf").%x.%x.%x.%x.%x.%n > input
 
 !!! Bash命令
 
-    $(command)的目的在于进行指令替换，用指令的结果来代替指令本身。数字之前放0x表示把94视为
+    $(command)的目的在于进行指令替换，用指令的结果来代替指令本身。数字之前放\x表示把94视为
     一个数字，由于是小端序，低字节放在低地址。
     
 把目标地址放在栈中之后，接下来要做的就是把va_list指针移动到这个数值所在的地址，然后使用%n。
