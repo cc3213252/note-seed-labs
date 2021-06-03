@@ -82,8 +82,9 @@ nav:
     - 心脏滴血漏洞:
         - 攻击: heartbleed/attack.md
     - 公钥基础设施:
-        - 公钥证书: pki/public_key.md
+        - 公钥证书: pki/public-key.md
         - 认证机构: pki/ca.md
+        - 根与中间CA: pki/root-middle-ca.md
 
 theme:
     name: readthedocs

@@ -136,8 +136,9 @@
     </tr>
     <tr>
         <td><strong>公钥基础设施</strong></td>
-        <td><a href="pki/public_key">公钥证书</a></td>
+        <td><a href="pki/public-key">公钥证书</a></td>
         <td><a href="pki/ca">认证机构</a></td>
+        <td><a href="pki/root-middle-ca">根与中间CA</a></td>
     </tr>
 </table>
 
