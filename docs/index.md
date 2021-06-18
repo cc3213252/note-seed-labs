@@ -139,6 +139,14 @@
         <td><a href="pki/public-key">公钥证书</a></td>
         <td><a href="pki/ca">认证机构</a></td>
         <td><a href="pki/root-middle-ca">根与中间CA</a></td>
+        <td><a href="pki/defense-mid-attack">防御中间人攻击</a></td>
+    </tr>
+    <tr>
+        <td><strong>传输层安全</strong></td>
+        <td><a href="transport/background">TLS概述</a></td>
+        <td><a href="transport/client">TLS客户端编程</a></td>
+        <td><a href="transport/mid-attack">中间人攻击没主机校验的服务</a></td>
+        <td><a href="transport/server">TLS服务器编程</a></td>
     </tr>
 </table>
 

@@ -147,3 +147,15 @@ file.close()
 
 ![gdb调试3](../img/overflow-gdb3.png)
 成功溢出攻击得到root权限  &#x1F44D;&#x1F44D;&#x1F44D;
+
+有小伙伴用seed虚拟机发现最后得到的是一个普通的shell窗口，可以查看下是否以下原因：
+
+!!! warning
+
+    Ubuntu 16.04以上版本，/bin/sh实际上是一个指向/bin/dash的链接文件，dash实现了
+    一个保护机制，当它发现自己在一个Set-UID的进程中运行时，会立刻把有效用户id变成实际
+    用户id，主动放弃特权。故利用/bin/sh发起的攻击不会成功。这也是上面显示Permission denied
+    的原因    
+    需要安装一个zsh的shell程序来做这个实验  
+    sudo apt install zsh  
+    sudo ln -sf /bin/zsh /bin/sh

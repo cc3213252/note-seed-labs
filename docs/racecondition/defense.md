@@ -55,7 +55,9 @@ int main()
 
     上面程序中/tmp/XYZ是一个符号链接，不是文件
     
-**跟随者是进程的有效用户id**
+**跟随者是进程的有效用户id**  
+**目录所有者是目录的拥有者**  
+**符号链接所有者是创立该符号链接的用户**  
 创建符号链接命令：
 ```bash
 ln -s /home/vagrant/works/seven/testlink.c /tmp/XYZ 
@@ -92,61 +94,33 @@ ln -s /home/vagrant/works/seven/testlink.c /tmp/XYZ
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-
-int main()
-{
-    char *fn = "/tmp/XYZ";
-    FILE *fp;
-    
-    seteuid(getuid());
-    fp = fopen(fn, "r");
-    if (fp == NULL)
-    {
-        printf("fopen() call failed \n");
-        printf("Reason: %s\n", strerror(errno));
-    }else{
-        printf("fopen() call succeeded \n");
-    }
-    fclose(fp);
-    return 0;
-}
-```
-
-![失败的实验](../img/race-limit.png)
-
-!!! warning
-
-    以上实验跟随者vagrant，目录所有者root，符号链接所有者root，本来有读取权限。加入最小权限后，还是有读取权限。
-    该实验没有做成功。
-
-```c
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
+#include <stdlib.h>
 #include <fcntl.h>
 
 int main()
-{
-    char *fn = "/tmp/XYZ";
-    int fp;
-    
-    // seteuid(getuid());
-    fp = open(fn, O_WRONLY);
-    if (fp != -1)
+{   
+    seteuid(getuid());
+    int f = open("/tmp/X", O_RDWR | O_APPEND);
+    printf("f is %d\n", f);
+    if (f != -1)
     {
-        printf("fopen() call succeeded \n");
+        printf("open() call succeeded \n");
     }else{
-        printf("fopen() call failed \n");
+        printf("open() call failed \n");
         printf("Reason: %s\n", strerror(errno));
     }
-    fclose(fp);
+    close(f);
     return 0;
 }
 ```
 
-![失败的实验2](../img/race-limit2.png)
+![权限降级实验](../img/race-limit.png)
+
+!!! Note
+
+    以上实验做之前建一个root用户的/tmp/X，把程序变成setuid程序，不加seteuid语句时，
+    可以正常打开。加了seteuid后，权限降级，无法打开
 
 !!! warning
 
-    改用书中程序，结果也是一样，seteuid(getuid())没有起作用。
+    不能打开链接文件，书上例子会无法成功，以上例子可以成功。
