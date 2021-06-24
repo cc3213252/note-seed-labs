@@ -40,3 +40,8 @@ Set-UID比特，使有效用户id（euid）为0，成为特权程序。***这种
 !!! warning
 
     chown命令会自动清空Set-UID比特，做实验时要注意先输入chown，再输入chmod  
+
+!!! vagrant安装
+
+    如果是mac电脑，brew install vagrant安装vagrant，还需要安装一个插件执行  
+    vagrant plugin install vagrant-hostmanager  
