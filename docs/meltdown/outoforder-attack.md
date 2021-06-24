@@ -101,7 +101,7 @@ int main()
 
 ```
 
-![乱序执行实验](../img/system-out-of-order.png)
+![乱序执行实验](../img/meltdown-out-of-order.png)
 
 ## task7: 两种方法提升赢得竞态条件
 
@@ -211,7 +211,7 @@ int main()
 ```
 
 pread(fd, NULL, 0, 0)这个语句就是把内核秘密值加到CPU缓存  
-![基础程序](../img/system-meltdown1.png)
+![基础程序](../img/meltdown-meltdown1.png)
 仍无法成功，需要继续优化
 
 ### 汇编代码促使推测执行机制
@@ -254,7 +254,7 @@ void meltdown_asm(unsigned long kernel_data_addr)
 }
 ```
 
-![汇编触发Meltdown](../img/system-asm-meltdown.png)
+![汇编触发Meltdown](../img/meltdown-asm-meltdown.png)
 加入汇编代码后，攻击有时成功，有时失败
 
 ## task8: 使攻击更加可行
@@ -384,7 +384,7 @@ int main()
 }
 ```
 
-![基础程序](../img/system-meltdown-basic.png)
+![基础程序](../img/meltdown-meltdown-basic.png)
 
 ## 找出所有字符
 
@@ -519,5 +519,5 @@ int main()
 }
 ```
 
-![优化程序](../img/system-meltdown-improved.png)
+![优化程序](../img/meltdown-meltdown-improved.png)
 可以看到也不是百分之百成功，但成功概率还是挺大的

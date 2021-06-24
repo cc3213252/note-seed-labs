@@ -96,7 +96,7 @@ clean:
 	make -C /lib/modules/$(KVERS)/build M=$(CURDIR) clean
 ```
 
-![编译内核](../img/system-compile-kernel.png)
+![编译内核](../img/meltdown-compile-kernel.png)
 insmod把内核模块载入内核，编写可加载内核模块可以参考基于Netfilter实现一个防火墙一节  
 
 ## task4: 从用户空间访问内核内存
@@ -116,7 +116,7 @@ int main()
 }
 ```
 结果发现是无法打印的：
-![直接打印内核地址](../img/system-print-addr.png)
+![直接打印内核地址](../img/meltdown-print-addr.png)
 
 ## task5: c语言处理打印地址异常
 
@@ -175,5 +175,5 @@ char kernel_data = *(char*)kernel_data_addr
 3、siglongjmp(jbuf, 1)会跳转到sigsetjmp(jbuf, 1)这一行，并且siglongjmp的第二个参数将会是sigsetjmp函数
 的返回值，故最后打印内存访问冲突  
 
-![c语言异常捕获](../img/system-sig-jump.png)
+![c语言异常捕获](../img/meltdown-sig-jump.png)
 

@@ -20,7 +20,7 @@ CPU的cache是一个硬件的cache用于加快计算速度的，读CPU的缓存�
 当读取时，会先读CPU缓存，如果缓存命中，就直接取数据了。
 
 下图就是缓存命中情况和不命中情况读取逻辑：
-![缓存命中和不命中](../img/system-cachehit.png)
+![缓存命中和不命中](../img/meltdown-cachehit.png)
 
 ### task1: 从cache读和内存读对比
 
@@ -78,7 +78,7 @@ time1,time2因为是频繁操作，又不用取地址，适合用寄存器变量
 _mm_clflush这个函数调用一下，确保没有被CPU缓存  
 time1 = __rdtscp(&junk); 表示读取junk到内存，并返回TSC  
 
-![从cpu读和内存读时间差异](../img/system-cache-time.png)
+![从cpu读和内存读时间差异](../img/meltdown-cache-time.png)
 实验结果表明，数组3和7是从CPU的cache读的时间最少
 
 ### task2: 缓存作为侧通道
@@ -159,6 +159,6 @@ int main(int argc, const char **argv)
 
     这个值应通过前一个实验估计出来，按我这边上一个实验结果，TSC小于150可以认定为是从寄存器读的，故150较为合适
 
-![flushreload实验](../img/system-flushreload.png)
+![flushreload实验](../img/meltdown-flushreload.png)
 真实场景下，victim对于我来说是一个黑盒，我只知道运行一下会有一个secret值发生变化，通过这种方式可以把值猜出来。
 
