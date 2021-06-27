@@ -91,11 +91,18 @@ nav:
         - TLS客户端编程: transport/client.md
         - 中间人攻击没主机校验的服务: transport/mid-attack.md
         - TLS服务器编程: transport/server.md
-    - Meltdown攻击:
+    - 熔断攻击:
         - 概述: meltdown/background.md
         - 刷新与重载攻击: meltdown/flushreload-attack.md
         - 内核空间写值: meltdown/kernel-perpare.md
         - CPU乱序执行攻击: meltdown/outoforder-attack.md
+    - 幽灵漏洞:
+        - 基本利用: spectre/basic-use.md
+        - 武器级利用: spectre/weapon-exploits.md
+    - 安卓环境:
+        - 安卓安装: anenv/aninstall.md
+        - 安卓使用: anenv/anmanual.md
+        - Recovery模式: anenv/recoveryos.md
 
 theme:
     name: readthedocs
