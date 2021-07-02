@@ -163,7 +163,7 @@
         <td><a href="meltdown/outoforder-attack">CPU乱序执行攻击</a></td>
     </tr>
     <tr>
-        <td><strong>幽灵攻击</strong></td>
+        <td><strong>幽灵漏洞</strong></td>
         <td><a href="spectre/basic-use">基本利用</a></td>
         <td><a href="spectre/weapon-exploits">武器级利用</a></td>
     </tr>
@@ -182,6 +182,11 @@
     </tr>
     <tr>
         <td><strong>安卓重打包攻击</strong></td>
-        <td><a href="anrepack/repackattack">概述</a></td>
+        <td><a href="anrepack/delcontacts">删除所有联系人</a></td>
+        <td><a href="anrepack/tracelocation">追踪用户的位置</a></td>
+    </tr>
+    <tr>
+        <td><strong>安卓rooting</strong></td>
+        <td><a href="anrooting/basic">概述</a></td>
     </tr>
 </table>

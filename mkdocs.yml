@@ -103,6 +103,9 @@ nav:
         - 安卓安装: anenv/aninstall.md
         - 安卓使用: anenv/anmanual.md
         - Recovery模式: anenv/recoveryos.md
+    - 安卓重打包攻击:
+        - 删除所有联系人: anrepack/delcontacts.md
+        - 追踪用户的位置: anrepack/tracelocation.md
 
 theme:
     name: readthedocs

@@ -81,3 +81,7 @@ AID_SHELL这个user（id为2000），如果守护进程用adb root命令重启�
 4、Apps and ADB：都能获取  
 
 ![root选择](../img/anenv-root-options.png)
+
+## 通过ubuntu修改安卓文件
+
+![修改文件](../img/anenv-revise-file.png)
