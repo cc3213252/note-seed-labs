@@ -1,4 +1,4 @@
-# 安卓rooting
+# 写一个OTA并升级
 
 ## rooting背景
 
@@ -38,7 +38,7 @@ rooting概览：
     安卓有三种编译选项，分别是eng、user、userdebug。eng是用于工程版本，user用于发行版本，userdebug
     是部分调试版本
     
-## task1: 编译一个简单的OTA包
+## 写一个简单的OTA包
 
 准备一个攻击脚本dummy.sh，让recovery系统启动时运行该脚本  
 ```bash
@@ -49,9 +49,11 @@ echo hello > /system/dummy
 dummy.sh这个文件应放在/android目录下，因为安卓分区已经挂载到这个目录下了，安卓是建立在linux系统上的，
 启动时，linux是先启动，启动过程用/system/etc/init.sh这个脚本，我们通过在init.sh中插入命令来启动dummy.sh，
 由于我们是通过OTA方式修改文件，通过以下命令可实现这个目的：  
-update-binary.sh文件内容：  
+update-binary文件内容：  
 ```bash
-sed -i "/return 0/i /system/xbin/dummy.sh" /android/system/etc/init.sh
+cp dummy.sh /android/system/xbin
+chmod a+x /android/system/xbin/dummy.sh
+sed -i "/return 0/i/system/xbin/dummy.sh" /android/system/etc/init.sh
 ```
 -i表示编译文件  
 /return 0/ 表示找到return 0这行代码  
@@ -61,6 +63,8 @@ i 表示在找到的代码前插入
 
 **2、编译OTA包**，按如下目录构造OTA包  
 ![构造ota包](../img/anrooting-otatree.png)  
+记得要给update-binary可执行权限
+![可执行权限](../img/anrooting-chmod.png)
 打包ota  
 ![打包ota](../img/anrooting-otazip.png)
 
@@ -70,85 +74,35 @@ i 表示在找到的代码前插入
     解压缩命令： unzip -l my_ota.zip
 
 由于我们用的是ubuntu系统作为恢复系统，它没有恢复功能，所以我们需要自己构造恢复功能，就是说，需要自己对ota包解压，
-然后执行update-binary
+然后执行update-binary  
+在一个正常的物理机中，可以使用adb来远程安装ota包，但是在我们实验环境不行，必须要拷贝到安卓虚拟机，安卓虚拟机的恢复
+模式开启了ssh服务，故先要安卓虚拟机进入恢复模式
 
-## task2: 通过app_process注入代码
+!!! warning
 
-安卓启动过程：会运行一个叫app_process的程序，这个程序是由一个叫Zygote的守护进程启动的（也是所有app的守护进程），
-我们的目标是修改app_process，直接创建一个/system/dummy2文件
+    特别要注意的是恢复模式的ip和安卓虚拟机ip不一样
 
-app_process.c文件：
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-extern char** environ;
+安卓虚拟机恢复模式下，在ubuntu虚拟机中就可以使用scp命令把ota包拷过去  
+![拷贝ota包](../img/anrooting-scp.png)
 
-int main(int argc, char** argv) {
-    //Write the dummy file
-    FILE* f = fopen("/system/dummy2", "w");
-    if (f == NULL) {
-    printf("Permission Denied.\n");
-    exit(EXIT_FAILURE);
-    }
-    fclose(f);
-    //Launch the original binary
-    char* cmd = "/system/bin/app_process_original";
-    execve(cmd, argv, environ);
-    //execve() returns only if it fails
-    return EXIT_FAILURE;
-}
-```
-我们首先把原始app_process重命名为app_process_original
+之后我们在恢复模式下解包，并执行update-binary  
+![解包并执行](../img/anrooting-unzip.png)
 
-!!! NDK
+初步验证脚本执行成功了
+![脚本执行结果](../img/anrooting-update-result.png)
 
-    Native Development Kit(NDK)是一个用来编译在安卓系统运行的c/c++工具，这种类型的代码，叫原生代码，
-    可以在原生程序中独立存在也能被安卓app中的java代码通过JNI调用（Jave Native Interface）
+重启安卓虚拟机正常进入，可以看到我们预置的功能已经被成功执行了
+![查看ota结果](../img/anrooting-ota-result.png)
 
-我们的app_process程序是一个独立的原生程序，必须用NDK来编译，为了使用NDK，必须创建两个文件：Application.mk
-和Android.mk  
+    
+## 真实设备ota升级
 
-Application.mk:
-```mk
-APP_ABI := x86
-APP_PLATFORM := android-22
-APP_STL := stlport_static
-APP_BUILD_SCRIPT := Android.mk
-```
-
-Android.mk:  
-```mk
-LOCAL_PATH := $(call my-dir)
-include $(CLEAR_VARS)
-LOCAL_MODULE := app_process
-LOCAL_SRC_FILES := app_process.c
-include $(BUILD_EXECUTABLE)
-```
-
-编译脚本complie.sh：  
+在真实手机中，利用ota刷机，可以用adb sideload命令，一般是用以下几个命令
 ```bash
-export NDK_PROJECT_PATH=.
-ndk-build NDK_APPLICATION_MK=./Application.mk
+adb connect 10.0.2.4
+adb reboot recovery
+adb sideload ota.zip
 ```
 
-![编译原生代码](../img/anrooting-complie-native.png)
-可以看到编译完后的代码在/libs/x86目录下
+[sideload升级OTA](https://9to5google.com/2017/10/24/how-to-manually-sideload-install-ota-update-file-android-basics/)
 
-## 获取root窗口
-
-在一个典型的Linux系统中，可以通过设置set-uid比特位的方式通过shell程序来获取root权限，但是安卓系统在4.3版本后，
-已经去掉了set-uid机制。  
-另一个在启动过程中获取root shell的方法是通过OTA包，比如有名的SuperSU。本次实验通过守护进程获取一个root shell，
-过程是起一个客户端程序，向有root权限的守护进程发请求，守护进程会起一个shell进程，允许用户控制这个进程  
-
-![文件描述符](../img/anrooting-file-desc.png)  
-文件描述符用一个例子来说明，以上图实现的功能是，进程1的输入和进程0一样，标准输出和错误输出都丢弃
-
-![获取root过程](../img/anrooting-gain-root.png)  
-客户端获取另一个进程输入输出设备过程： 开始时，客户端和服务器都运行在各自进程，客户端只有普通权限，服务器有root
-权限，图b展示了客户端获取root权限过程：  
-1、客户端用socket连接服务器  
-2、收到请求后，服务器fork一个子进程root运行，子进程继承了所有服务器的I/O设备  
-3、客户端发送文件描述符给子进程，这些描述符分别用4、5、6保存  
-4、子进程重定向设备描述符，现在客户端进程和子进程共享设备描述符了  

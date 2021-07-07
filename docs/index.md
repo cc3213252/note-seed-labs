@@ -189,6 +189,8 @@
     <tr>
         <td><strong>安卓rooting</strong></td>
         <td><a href="anrooting/basic">前置知识</a></td>
-        <td><a href="anrooting/simple-ota">简单ota</a></td>
+        <td><a href="anrooting/simple-ota">写一个ota并升级</a></td>
+        <td><a href="anrooting/ndk-ota">NDK编译原生代码注入攻击</a></td>
+        <td><a href="anrooting/rooting">实现rooting攻击</a></td>
     </tr>
 </table>
