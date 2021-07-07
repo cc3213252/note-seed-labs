@@ -152,7 +152,7 @@
 
 </br>
 
-## 系统安全
+## 硬件安全
 
 <table border="0">
     <tr>
@@ -182,11 +182,13 @@
     </tr>
     <tr>
         <td><strong>安卓重打包攻击</strong></td>
+        <td><a href="anrepack/basic">前置知识</a></td>
         <td><a href="anrepack/delcontacts">删除所有联系人</a></td>
         <td><a href="anrepack/tracelocation">追踪用户的位置</a></td>
     </tr>
     <tr>
         <td><strong>安卓rooting</strong></td>
-        <td><a href="anrooting/basic">概述</a></td>
+        <td><a href="anrooting/basic">前置知识</a></td>
+        <td><a href="anrooting/simple-ota">简单ota</a></td>
     </tr>
 </table>

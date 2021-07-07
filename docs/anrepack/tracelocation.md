@@ -90,13 +90,3 @@ Settings--date and time -- set time
 
 故这个实验在国内做困难重重，除非在虚拟机内部安装vpn。
 
-## 虚拟机使用宿主机vpn翻墙
-
-1、查看vpn的代理端口是9999  
-![代理端口](../img/anrepack-port.png)
-
-2、设置http代理端口  
-![proxy](../img/anrepack-http-proxy.png)
-
-3、成功上网  
-![成功上网](../img/anrepack-visit-google.png)
