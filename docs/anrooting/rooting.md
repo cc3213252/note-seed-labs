@@ -45,3 +45,22 @@ sed -i "/return 0/i /system/xbin/mydaemon" /android/system/etc/init.sh
 
 打成zip包  
 ![打包ota](../img/anrooting-suota-zip.png)
+
+## 执行OTA更新
+
+正常在物理机更新只需通过adb sideload命令，配合物理机按键即可自动执行OTA更新。但是我们模拟环境需要自己解包并执行update-binary，
+首先安卓虚拟机需要进入recovery模式  
+![进入recovery](../img/anrooting-come-recovery.png)
+
+把ota包拷贝到安卓虚拟机  
+![拷贝ota](../img/anrooting-copy-ota.png)
+
+解包并执行  
+![解包并执行](../img/anrooting-unzip-exec.png)
+
+初步验证update-binary执行了  
+![初步验证](../img/anrooting-confirm-su.png)
+
+## 在安卓系统用普通用户获取到root权限
+
+![获取root](../img/anrooting-inject-success.png)

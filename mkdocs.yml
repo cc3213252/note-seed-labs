@@ -107,6 +107,11 @@ nav:
         - 前置知识: anrepack/basic.md
         - 删除所有联系人: anrepack/delcontacts.md
         - 追踪用户的位置: anrepack/tracelocation.md
+    - 安卓rooting:
+        - 前置知识: anrooting/basic.md
+        - 实现一个OTA: anrooting/simple-ota.md
+        - NDK编译注入攻击: anrooting/ndk-ota.md
+        - 实现rooting攻击: anrooting/rooting.md
 
 theme:
     name: readthedocs
