@@ -112,6 +112,7 @@ nav:
         - 实现一个OTA: anrooting/simple-ota.md
         - NDK编译注入攻击: anrooting/ndk-ota.md
         - 实现rooting攻击: anrooting/rooting.md
+        - rooting代码分析: anrooting/rooting-analysis.md
 
 theme:
     name: readthedocs
